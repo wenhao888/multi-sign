@@ -10,6 +10,7 @@ import "./ConvertLib.sol";
 
 contract MetaCoin {
 	mapping (address => uint) balances;
+	uint public total;
 
 	event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
@@ -31,5 +32,9 @@ contract MetaCoin {
 
 	function getBalance(address addr) public view returns(uint) {
 		return balances[addr];
+	}
+
+	function setTotal(uint _total) public {
+		total = _total;
 	}
 }

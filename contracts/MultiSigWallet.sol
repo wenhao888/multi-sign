@@ -1,4 +1,5 @@
 pragma solidity >=0.4.25 <0.7.0;
+pragma experimental ABIEncoderV2;
 
 
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
@@ -26,9 +27,9 @@ contract MultiSigWallet {
     /*
      *  Storage
      */
-    mapping (uint => Transaction) public transactions;
-    mapping (uint => mapping (address => bool)) public confirmations;
-    mapping (address => bool) public isOwner;
+    mapping(uint => Transaction) public transactions;
+    mapping(uint => mapping(address => bool)) public confirmations;
+    mapping(address => bool) public isOwner;
     address[] public owners;
     uint public required;
     uint public transactionCount;
@@ -109,7 +110,7 @@ contract MultiSigWallet {
     public
     validRequirement(_owners.length, _required)
     {
-        for (uint i=0; i<_owners.length; i++) {
+        for (uint i = 0; i < _owners.length; i++) {
             require(!isOwner[_owners[i]] && _owners[i] != address(0));
             isOwner[_owners[i]] = true;
         }
@@ -139,7 +140,7 @@ contract MultiSigWallet {
     ownerExists(owner)
     {
         isOwner[owner] = false;
-        for (uint i=0; i<owners.length - 1; i++)
+        for (uint i = 0; i < owners.length - 1; i++)
             if (owners[i] == owner) {
                 owners[i] = owners[owners.length - 1];
                 break;
@@ -159,7 +160,7 @@ contract MultiSigWallet {
     ownerExists(owner)
     ownerDoesNotExist(newOwner)
     {
-        for (uint i=0; i<owners.length; i++)
+        for (uint i = 0; i < owners.length; i++)
             if (owners[i] == owner) {
                 owners[i] = newOwner;
                 break;
@@ -188,10 +189,11 @@ contract MultiSigWallet {
     /// @return Returns transaction ID.
     function submitTransaction(address destination, uint value, bytes memory data)
     public
-    returns (uint transactionId)
+    returns (uint transactionId, Transaction memory transaction)
     {
         transactionId = addTransaction(destination, value, data);
         confirmTransaction(transactionId);
+        transaction = transactions[transactionId];
     }
 
     /// @dev Allows an owner to confirm a transaction.
@@ -247,13 +249,13 @@ contract MultiSigWallet {
             let x := mload(0x40)   // "Allocate" memory for output (0x40 is where "free memory" pointer is stored by convention)
             let d := add(data, 32) // First 32 bytes are the padded length of data, so exclude that
             result := call(
-            sub(gas, 34710),   // 34710 is the value that solidity is currently emitting
+            sub(gas, 34710), // 34710 is the value that solidity is currently emitting
             // It includes callGas (700) + callVeryLow (3, to pay for SUB) + callValueTransferGas (9000) +
             // callNewAccountGas (25000, in case the destination address does not exist and needs creating)
             destination,
             value,
             d,
-            dataLength,        // Size of the input (in bytes) - this is what fixes the padding problem
+            dataLength, // Size of the input (in bytes) - this is what fixes the padding problem
             x,
             0                  // Output is ignored, therefore the output size is zero
             )
@@ -270,7 +272,7 @@ contract MultiSigWallet {
     returns (bool)
     {
         uint count = 0;
-        for (uint i=0; i<owners.length; i++) {
+        for (uint i = 0; i < owners.length; i++) {
             if (confirmations[transactionId][owners[i]])
                 count += 1;
             if (count == required)
@@ -293,10 +295,10 @@ contract MultiSigWallet {
     {
         transactionId = transactionCount;
         transactions[transactionId] = Transaction({
-        destination: destination,
-        value: value,
-        data: data,
-        executed: false
+        destination : destination,
+        value : value,
+        data : data,
+        executed : false
         });
         transactionCount += 1;
         emit Submission(transactionId);
@@ -313,7 +315,7 @@ contract MultiSigWallet {
     view
     returns (uint count)
     {
-        for (uint i=0; i<owners.length; i++)
+        for (uint i = 0; i < owners.length; i++)
             if (confirmations[transactionId][owners[i]])
                 count += 1;
     }
@@ -327,8 +329,8 @@ contract MultiSigWallet {
     view
     returns (uint count)
     {
-        for (uint i=0; i<transactionCount; i++)
-            if (   pending && !transactions[i].executed
+        for (uint i = 0; i < transactionCount; i++)
+            if (pending && !transactions[i].executed
             || executed && transactions[i].executed)
                 count += 1;
     }
@@ -354,13 +356,13 @@ contract MultiSigWallet {
         address[] memory confirmationsTemp = new address[](owners.length);
         uint count = 0;
         uint i;
-        for (i=0; i<owners.length; i++)
+        for (i = 0; i < owners.length; i++)
             if (confirmations[transactionId][owners[i]]) {
                 confirmationsTemp[count] = owners[i];
                 count += 1;
             }
         _confirmations = new address[](count);
-        for (i=0; i<count; i++)
+        for (i = 0; i < count; i++)
             _confirmations[i] = confirmationsTemp[i];
     }
 
@@ -378,15 +380,18 @@ contract MultiSigWallet {
         uint[] memory transactionIdsTemp = new uint[](transactionCount);
         uint count = 0;
         uint i;
-        for (i=0; i<transactionCount; i++)
-            if (   pending && !transactions[i].executed
+        for (i = 0; i < transactionCount; i++)
+            if (pending && !transactions[i].executed
             || executed && transactions[i].executed)
             {
                 transactionIdsTemp[count] = i;
                 count += 1;
             }
         _transactionIds = new uint[](to - from);
-        for (i=from; i<to; i++)
+        for (i = from; i < to; i++)
             _transactionIds[i - from] = transactionIdsTemp[i];
     }
+
+    //below is for testing purpose
+
 }
