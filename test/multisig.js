@@ -18,8 +18,10 @@ contract('MultiSign', (accounts) => {
         console.log("code", code);
 
         let invoke = await instance.submitTransaction(metaCoin.address, 0, code , {from: accounts[0]});
-        // console.log("invoke", invoke.valueOf())
+        console.log("invoke", invoke)
 
+
+        console.log("--------------------------")
 
         invoke = await instance.confirmTransaction(0, {from: accounts[1]});
         console.log("invoke", invoke)
