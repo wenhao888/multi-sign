@@ -11,24 +11,45 @@ contract('MultiSign', (accounts) => {
         let invoke = await metaCoinInstance.sendCoin(instance.address,5000);
 
         const code = Web3EthAbi.encodeFunctionCall({
-            name: 'setTotal',
-            type: 'function',
-            inputs: [{
-                type: 'uint256',
-                name: '_total'
-            }]
-        }, [600]);
+            "constant": false,
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "receiver",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "sendCoin",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "sufficient",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }, [accounts[2], 300]);
         console.log("code", code);
+
         let codeBytes = Web3Utils.hexToBytes(code);
 
         invoke = await instance.submitTransaction(metaCoin.address, 0, codeBytes, {from: accounts[0]});
         let transactionId= invoke.logs[0].args[0].toNumber();
         invoke = await instance.confirmTransaction(transactionId, {from: accounts[1]});
-        // console.log("invoke", invoke)
+        console.log("invoke", invoke)
 
-        invoke = await metaCoinInstance.total();
+        // invoke = await metaCoinInstance.total();
+        // console.log("invoke", invoke);
+
+        invoke = await metaCoinInstance.getBalance(accounts[2]);
         console.log("invoke", invoke);
-
     });
 
 });
