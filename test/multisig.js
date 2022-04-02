@@ -39,9 +39,7 @@ contract('MultiSign', (accounts) => {
 
         invoke = await instance.confirmTransaction(0, {from: accounts[1]});
         console.log("invoke", invoke)
-        //
-        // invoke = await instance.parameter();
-        // console.log("invoke", invoke)
+
 
         invoke = await metaCoinInstance.total();
         console.log("invoke", invoke);

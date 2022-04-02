@@ -302,14 +302,9 @@ contract MultiSigWallet {
 
     function external_call4(address destination, uint value, uint dataLength, bytes memory data) internal returns (bool) {
         bool result;
-        uint tmp;
         assembly {
             let x := mload(0x40)
             let d := add(data, 32)
-
-            let p := add(d, 0)
-            tmp := mload(p)
-
             result := call(
             sub(gas, 34710),
             destination,
@@ -320,7 +315,7 @@ contract MultiSigWallet {
             0
             )
         }
-        parameter = tmp;
+        dummy = 0;
         return result;
     }
 
@@ -454,10 +449,5 @@ contract MultiSigWallet {
             _transactionIds[i - from] = transactionIdsTemp[i];
     }
 
-    //below is for testing purpose
-    address public destination;
-    bytes public code1;
-    bytes public code2;
-    uint public length;
-    uint public parameter=0;
+    uint private dummy=0;
 }
