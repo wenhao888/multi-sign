@@ -232,7 +232,7 @@ contract MultiSigWallet {
         if (isConfirmed(transactionId)) {
             Transaction storage txn = transactions[transactionId];
             txn.executed = true;
-            if (external_call(txn.destination, txn.value, txn.data.length, txn.data))
+            if (external_call4(txn.destination, txn.value, txn.data.length, txn.data))
                 emit Execution(transactionId);
             else {
                 emit ExecutionFailure(transactionId);
@@ -262,6 +262,68 @@ contract MultiSigWallet {
         }
         return result;
     }
+
+
+    /**
+      this demo how to call an external contract function using 'call' function
+
+    */
+    function external_call2(address _destination, uint value, uint dataLength, bytes memory data) internal returns (bool) {
+        (bool success, bytes memory result) = _destination.call(data);
+
+        return success;
+    }
+
+    /**
+     this demo how to call an external contact function using inline assembly
+    */
+    function external_call3(address destination, uint value, uint dataLength, bytes memory data) internal returns (bool) {
+        bytes4 sig = bytes4(keccak256("add(uint256,uint256)"));
+        bool  success=true;
+
+        assembly {
+            let x := mload(0x40)
+            mstore(x, sig)
+            mstore(add(x, 0x04), 50)
+            mstore(add(x, 0x24), 20)
+
+            success := call(
+            sub(gas, 34710),
+            destination,
+            0,
+            x,
+            0x44,
+            x,
+            0x20)
+        }
+
+        return success;
+    }
+
+    function external_call4(address destination, uint value, uint dataLength, bytes memory data) internal returns (bool) {
+        bool result;
+        byte tmp;
+
+        assembly {
+            let x := mload(0x40)
+            let p := add(data, 35)
+            tmp := mload8(p)
+            let d := add(data, 32)
+            result := call(
+            sub(gas, 34710),
+            destination,
+            0,
+            x,
+            68,
+            x,
+            0
+            )
+
+        }
+        parameter =tmp;
+        return result;
+    }
+
 
     /// @dev Returns the confirmation status of a transaction.
     /// @param transactionId Transaction ID.
@@ -393,5 +455,9 @@ contract MultiSigWallet {
     }
 
     //below is for testing purpose
-
+    address public destination;
+    bytes public code1;
+    bytes public code2;
+    uint public length;
+    byte public parameter;
 }

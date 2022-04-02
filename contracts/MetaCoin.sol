@@ -34,7 +34,11 @@ contract MetaCoin {
 		return balances[addr];
 	}
 
-	function setTotal(uint _total) public {
+	function setTotal(uint256 _total) public {
 		total = _total;
+	}
+
+	function add(uint256 a, uint256 b) public {
+		total = a +b;
 	}
 }

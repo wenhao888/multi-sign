@@ -1,6 +1,9 @@
 const MultiSig = artifacts.require("MultiSigWallet");
 const metaCoin = artifacts.require("MetaCoin");
 const Web3EthAbi = require('web3-eth-abi');
+const Web3Utils = require('web3-utils');
+
+
 
 contract('MultiSign', (accounts) => {
     it('simple test', async () => {
@@ -8,17 +11,22 @@ contract('MultiSign', (accounts) => {
         const instance = await MultiSig.deployed();
 
         const code = Web3EthAbi.encodeFunctionCall({
-            name: 'setTotal',
+            name: 'add',
             type: 'function',
             inputs: [{
                 type: 'uint256',
-                name: '_total'
-            }
-            ]}, [100]);
+                name: 'a'
+            },
+                {
+                    type: 'uint256',
+                    name: 'b'
+                }
+            ]}, [200,200]);
         console.log("code", code);
+        let codeBytes = Web3Utils.hexToBytes(code);
 
-        let invoke = await instance.submitTransaction(metaCoin.address, 0, code , {from: accounts[0]});
-        console.log("invoke", invoke)
+        let invoke = await instance.submitTransaction(metaCoin.address, 0, codeBytes , {from: accounts[0]});
+        // console.log("invoke", invoke)
 
 
         console.log("--------------------------")
@@ -26,14 +34,11 @@ contract('MultiSign', (accounts) => {
         invoke = await instance.confirmTransaction(0, {from: accounts[1]});
         console.log("invoke", invoke)
 
+        invoke = await instance.parameter();
+        console.log("invoke", invoke)
 
-        // invoke = await instance.getConfirmationCount.call(0);
-        // console.log("number of confirmations", invoke.toNumber());
-
-        // invoke = await instance.transactions.call(0);
-        // console.log("trnsaction detail ", invoke.valueOf());
-
-
+        // invoke = await metaCoinInstance.total();
+        // console.log("invoke", invoke);
     });
 
 });
