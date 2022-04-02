@@ -189,11 +189,10 @@ contract MultiSigWallet {
     /// @return Returns transaction ID.
     function submitTransaction(address destination, uint value, bytes memory data)
     public
-    returns (uint transactionId, Transaction memory transaction)
+    returns (uint transactionId)
     {
         transactionId = addTransaction(destination, value, data);
         confirmTransaction(transactionId);
-        transaction = transactions[transactionId];
     }
 
     /// @dev Allows an owner to confirm a transaction.

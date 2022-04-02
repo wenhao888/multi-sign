@@ -4,7 +4,6 @@ const Web3EthAbi = require('web3-eth-abi');
 const Web3Utils = require('web3-utils');
 
 
-
 contract('MultiSign', (accounts) => {
     it('simple test', async () => {
         const metaCoinInstance = await metaCoin.deployed();
@@ -21,28 +20,27 @@ contract('MultiSign', (accounts) => {
         //             name: 'b'
         //         }
         //     ]}, [200,600]);
+
+
         const code = Web3EthAbi.encodeFunctionCall({
             name: 'setTotal',
             type: 'function',
             inputs: [{
                 type: 'uint256',
                 name: '_total'
-            }]}, [600]);
+            }]
+        }, [600]);
         console.log("code", code);
         let codeBytes = Web3Utils.hexToBytes(code);
 
-        let invoke = await instance.submitTransaction(metaCoin.address, 0, codeBytes , {from: accounts[0]});
-        // console.log("invoke", invoke)
-
-
-        console.log("--------------------------")
-
-        invoke = await instance.confirmTransaction(0, {from: accounts[1]});
+        let invoke = await instance.submitTransaction(metaCoin.address, 0, codeBytes, {from: accounts[0]});
+        let transactionId= invoke.logs[0].args[0].toNumber();
+        invoke = await instance.confirmTransaction(transactionId, {from: accounts[1]});
         console.log("invoke", invoke)
-
 
         invoke = await metaCoinInstance.total();
         console.log("invoke", invoke);
+
     });
 
 });
