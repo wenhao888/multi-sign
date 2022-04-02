@@ -11,10 +11,12 @@ import "./ConvertLib.sol";
 contract MetaCoin {
 	mapping (address => uint) balances;
 	uint public total;
+	address public owner;
 
 	event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
 	constructor() public {
+		owner = tx.origin;
 		balances[tx.origin] = 10000;
 	}
 
