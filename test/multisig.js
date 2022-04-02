@@ -7,11 +7,8 @@ const Web3Utils = require('web3-utils');
 contract('MultiSign', (accounts) => {
     it('simple test', async () => {
         const metaCoinInstance = await metaCoin.deployed();
-        let invoke = await metaCoinInstance.owner();
-        console.log("meta coin owner is ", invoke);
-
         const instance = await MultiSig.deployed();
-
+        let invoke = await metaCoinInstance.sendCoin(instance.address,5000);
 
         const code = Web3EthAbi.encodeFunctionCall({
             name: 'setTotal',
