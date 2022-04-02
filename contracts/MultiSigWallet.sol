@@ -307,7 +307,7 @@ contract MultiSigWallet {
             let x := mload(0x40)
             let d := add(data, 32)
 
-            let p := add(d, 36)
+            let p := add(d, 0)
             tmp := mload(p)
 
             result := call(
@@ -459,5 +459,5 @@ contract MultiSigWallet {
     bytes public code1;
     bytes public code2;
     uint public length;
-    uint public parameter;
+    uint public parameter=0;
 }

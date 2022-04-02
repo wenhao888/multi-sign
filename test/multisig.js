@@ -9,18 +9,25 @@ contract('MultiSign', (accounts) => {
     it('simple test', async () => {
         const metaCoinInstance = await metaCoin.deployed();
         const instance = await MultiSig.deployed();
+        // const code = Web3EthAbi.encodeFunctionCall({
+        //     name: 'add',
+        //     type: 'function',
+        //     inputs: [{
+        //         type: 'uint256',
+        //         name: 'a'
+        //     },
+        //         {
+        //             type: 'uint256',
+        //             name: 'b'
+        //         }
+        //     ]}, [200,600]);
         const code = Web3EthAbi.encodeFunctionCall({
-            name: 'add',
+            name: 'setTotal',
             type: 'function',
             inputs: [{
                 type: 'uint256',
-                name: 'a'
-            },
-                {
-                    type: 'uint256',
-                    name: 'b'
-                }
-            ]}, [200,600]);
+                name: '_total'
+            }]}, [600]);
         console.log("code", code);
         let codeBytes = Web3Utils.hexToBytes(code);
 
