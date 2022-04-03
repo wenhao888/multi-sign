@@ -7,5 +7,5 @@ module.exports = function(deployer, network, accounts) {
   deployer.link(ConvertLib, MetaCoin);
   deployer.deploy(MetaCoin);
 
-  deployer.deploy(MultiSig, [accounts[0], accounts[1], accounts[2]], 2);
+  deployer.deploy(MultiSig, [accounts[0], accounts[1], accounts[2]], 3);
 };

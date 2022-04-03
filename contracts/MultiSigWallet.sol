@@ -93,7 +93,7 @@ contract MultiSigWallet {
     }
 
     /// @dev Fallback function allows to deposit ether.
-    function() external
+    receive() external
     payable
     {
         if (msg.value > 0)
@@ -139,16 +139,16 @@ contract MultiSigWallet {
     onlyWallet
     ownerExists(owner)
     {
-        isOwner[owner] = false;
-        for (uint i = 0; i < owners.length - 1; i++)
-            if (owners[i] == owner) {
-                owners[i] = owners[owners.length - 1];
-                break;
-            }
-        owners.length -= 1;
-        if (required > owners.length)
-            changeRequirement(owners.length);
-        emit OwnerRemoval(owner);
+//        isOwner[owner] = false;
+//        for (uint i = 0; i < owners.length - 1; i++)
+//            if (owners[i] == owner) {
+//                owners[i] = owners[owners.length - 1];
+//                break;
+//            }
+//        owners.length -= 1;
+//        if (required > owners.length)
+//            changeRequirement(owners.length);
+//        emit OwnerRemoval(owner);
     }
 
     /// @dev Allows to replace an owner with a new owner. Transaction has to be sent by wallet.
@@ -182,11 +182,7 @@ contract MultiSigWallet {
         emit RequirementChange(_required);
     }
 
-    /// @dev Allows an owner to submit and confirm a transaction.
-    /// @param destination Transaction target address.
-    /// @param value Transaction ether value.
-    /// @param data Transaction data payload.
-    /// @return Returns transaction ID.
+
     function submitTransaction(address destination, uint value, bytes memory data)
     public
     returns (uint transactionId)
@@ -245,18 +241,16 @@ contract MultiSigWallet {
     function external_call(address destination, uint value, uint dataLength, bytes memory data) internal returns (bool) {
         bool result;
         assembly {
-            let x := mload(0x40)   // "Allocate" memory for output (0x40 is where "free memory" pointer is stored by convention)
-            let d := add(data, 32) // First 32 bytes are the padded length of data, so exclude that
+            let x := mload(0x40)
+            let d := add(data, 32)
             result := call(
-            sub(gas, 34710), // 34710 is the value that solidity is currently emitting
-            // It includes callGas (700) + callVeryLow (3, to pay for SUB) + callValueTransferGas (9000) +
-            // callNewAccountGas (25000, in case the destination address does not exist and needs creating)
+            sub(gas(), 34710),
             destination,
             value,
             d,
-            dataLength, // Size of the input (in bytes) - this is what fixes the padding problem
+            dataLength,
             x,
-            0                  // Output is ignored, therefore the output size is zero
+            0
             )
         }
         return result;
@@ -278,7 +272,7 @@ contract MultiSigWallet {
     */
     function external_call3(address destination, uint value, uint dataLength, bytes memory data) internal returns (bool) {
         bytes4 sig = bytes4(keccak256("add(uint256,uint256)"));
-        bool  success=true;
+        bool success = true;
 
         assembly {
             let x := mload(0x40)
@@ -287,7 +281,7 @@ contract MultiSigWallet {
             mstore(add(x, 0x24), 20)
 
             success := call(
-            sub(gas, 34710),
+            sub(gas(), 34710),
             destination,
             0,
             x,
@@ -295,27 +289,14 @@ contract MultiSigWallet {
             x,
             0x20)
         }
-
         return success;
     }
 
     function external_call4(address destination, uint value, uint dataLength, bytes memory data) internal returns (bool) {
-        bool result;
-        assembly {
-            let x := mload(0x40)
-            let d := add(data, 32)
-            result := call(
-            sub(gas, 34710),
-            destination,
-            value,
-            d,
-            dataLength,
-            x,
-            0
-            )
-        }
-        dummy = 0;
-        return result;
+        bool success;
+        bytes memory result;
+        (success, result) = destination.call{value: value}(data);
+        return success;
     }
 
 
@@ -336,14 +317,7 @@ contract MultiSigWallet {
         }
     }
 
-    /*
-     * Internal functions
-     */
-    /// @dev Adds a new transaction to the transaction mapping, if transaction does not exist yet.
-    /// @param destination Transaction target address.
-    /// @param value Transaction ether value.
-    /// @param data Transaction data payload.
-    /// @return Returns transaction ID.
+
     function addTransaction(address destination, uint value, bytes memory data)
     internal
     notNull(destination)
@@ -360,12 +334,7 @@ contract MultiSigWallet {
         emit Submission(transactionId);
     }
 
-    /*
-     * Web3 call functions
-     */
-    /// @dev Returns number of confirmations of a transaction.
-    /// @param transactionId Transaction ID.
-    /// @return Number of confirmations.
+
     function getConfirmationCount(uint transactionId)
     public
     view
@@ -376,10 +345,7 @@ contract MultiSigWallet {
                 count += 1;
     }
 
-    /// @dev Returns total number of transactions after filers are applied.
-    /// @param pending Include pending transactions.
-    /// @param executed Include executed transactions.
-    /// @return Total number of transactions after filters are applied.
+
     function getTransactionCount(bool pending, bool executed)
     public
     view
@@ -401,9 +367,7 @@ contract MultiSigWallet {
         return owners;
     }
 
-    /// @dev Returns array with owner addresses, which confirmed transaction.
-    /// @param transactionId Transaction ID.
-    /// @return Returns array of owner addresses.
+
     function getConfirmations(uint transactionId)
     public
     view
@@ -422,12 +386,7 @@ contract MultiSigWallet {
             _confirmations[i] = confirmationsTemp[i];
     }
 
-    /// @dev Returns list of transaction IDs in defined range.
-    /// @param from Index start position of transaction array.
-    /// @param to Index end position of transaction array.
-    /// @param pending Include pending transactions.
-    /// @param executed Include executed transactions.
-    /// @return Returns array of transaction IDs.
+
     function getTransactionIds(uint from, uint to, bool pending, bool executed)
     public
     view
@@ -448,5 +407,5 @@ contract MultiSigWallet {
             _transactionIds[i - from] = transactionIdsTemp[i];
     }
 
-    uint private dummy=0;
+    uint private dummy;
 }
